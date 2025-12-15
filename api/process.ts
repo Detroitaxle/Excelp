@@ -12,17 +12,11 @@
  * - Use WebAssembly with Pyodide for client-side processing
  */
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
-import { NextApiRequest, NextApiResponse } from 'next';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
+  req: VercelRequest,
+  res: VercelResponse
 ) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -40,10 +34,10 @@ export default async function handler(
     
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', 'attachment; filename="processed_file.xlsx"');
-    res.status(200).send(sampleData);
+    return res.status(200).send(sampleData);
   } catch (error: any) {
     console.error('Processing error:', error);
-    res.status(500).json({ 
+    return res.status(500).json({ 
       error: 'Processing failed', 
       message: error.message 
     });
