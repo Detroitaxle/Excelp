@@ -43,9 +43,9 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, selectedFile, onF
       return;
     }
     
-    //validateAndSelectFile(file);
-    }
-  }, [validateAndSelectFilele appears to be empty or corrupted');
+    // Check file size minimum
+    if (file.size < 100) {
+      setError('File appears to be empty or corrupted');
       return;
     }
     
@@ -67,9 +67,9 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, selectedFile, onF
   const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      onFileSelect(file);
+      validateAndSelectFile(file);
     }
-  }, [onFileSelect]);
+  }, [validateAndSelectFile]);
 
   if (selectedFile) {
     return (

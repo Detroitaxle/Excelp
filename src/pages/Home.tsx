@@ -142,16 +142,9 @@ export default function Home() {
     a.href = url;
     a.download = `processed_${selectedFile.name}`;
     document.body.appendChild(a);
-    a.click({selectedFile && (
-              <section>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Preview Data</h3>
-                <DataPreview file={selectedFile} />
-              </section>
-            )}
-
-            <section>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">2. Write Python Script</h3>
-              <ScriptEditorEnhanced);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
     
     toast.success('Download started!');
   };
@@ -170,6 +163,61 @@ export default function Home() {
       
       <main className="flex-1">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Process Excel Files with Python
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Upload your Excel file, write a Python script to transform the data, 
+              and download the processed results. Perfect for data analysis and automation.
+            </p>
+          </div>
+
+          <div className="space-y-8">
+            <section>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">1. Upload Excel File</h3>
+              <FileUpload
+                onFileSelect={handleFileSelect}
+                selectedFile={selectedFile}
+                onFileRemove={handleFileRemove}
+              />
+            </section>
+
+            {selectedFile && (
+              <section>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Preview Data</h3>
+                <DataPreview file={selectedFile} />
+              </section>
+            )}
+
+            <section>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">2. Write Python Script</h3>
+              <ScriptEditorEnhanced
+                script={script}
+                onScriptChange={setScript}
+              />
+            </section>
+
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold text-gray-900">3. Process & Download</h3>
+                <button
+                  onClick={handleProcess}
+                  disabled={!selectedFile || !script.trim() || processingStatus === 'processing'}
+                  className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 py-2 rounded-md font-medium flex items-center space-x-2 transition-colors"
+                >
+                  <Play className="h-4 w-4" />
+                  <span>Process File</span>
+                </button>
+              </div>
+              
+              <ProcessingStatus
+                status={processingStatus}
+                error={error}
+                onDownload={handleDownload}
+                onReset={handleReset}
+              />
+            </section>
 
             {history.length > 0 && (
               <section>
@@ -212,54 +260,6 @@ export default function Home() {
                 )}
               </section>
             )}
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Process Excel Files with Python
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Upload your Excel file, write a Python script to transform the data, 
-              and download the processed results. Perfect for data analysis and automation.
-            </p>
-          </div>
-
-          <div className="space-y-8">
-            <section>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">1. Upload Excel File</h3>
-              <FileUpload
-                onFileSelect={handleFileSelect}
-                selectedFile={selectedFile}
-                onFileRemove={handleFileRemove}
-              />
-            </section>
-
-            <section>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">2. Write Python Script</h3>
-              <ScriptEditor
-                script={script}
-                onScriptChange={setScript}
-              />
-            </section>
-
-            <section>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold text-gray-900">3. Process & Download</h3>
-                <button
-                  onClick={handleProcess}
-                  disabled={!selectedFile || !script.trim() || processingStatus === 'processing'}
-                  className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 py-2 rounded-md font-medium flex items-center space-x-2 transition-colors"
-                >
-                  <Play className="h-4 w-4" />
-                  <span>Process File</span>
-                </button>
-              </div>
-              
-              <ProcessingStatus
-                status={processingStatus}
-                error={error}
-                onDownload={handleDownload}
-                onReset={handleReset}
-              />
-            </section>
           </div>
         </div>
       </main>
