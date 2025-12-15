@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Eye, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 interface DataPreviewProps {
   file: File | null;
@@ -34,35 +35,46 @@ const DataPreview: React.FC<DataPreviewProps> = ({ file }) => {
     setError('');
 
     try {
-      // For demo purposes, we'll create sample data
-      // In production, you'd parse the actual Excel file here
       const reader = new FileReader();
       
       reader.onload = (e) => {
         try {
-          // Simulating Excel parsing
-          // In production, use libraries like SheetJS (xlsx)
-          const sampleData: PreviewData = {
-            headers: ['ID', 'Name', 'Email', 'Department', 'Salary', 'Join Date'],
-            rows: [
-              [1, 'John Doe', 'john@company.com', 'Engineering', 75000, '2023-01-15'],
-              [2, 'Jane Smith', 'jane@company.com', 'Marketing', 65000, '2023-02-20'],
-              [3, 'Bob Johnson', 'bob@company.com', 'Sales', 70000, '2023-03-10'],
-              [4, 'Alice Williams', 'alice@company.com', 'Engineering', 80000, '2023-01-25'],
-              [5, 'Charlie Brown', 'charlie@company.com', 'HR', 60000, '2023-04-05'],
-              [6, 'Diana Prince', 'diana@company.com', 'Engineering', 85000, '2023-02-15'],
-              [7, 'Eve Wilson', 'eve@company.com', 'Marketing', 68000, '2023-03-20'],
-              [8, 'Frank Castle', 'frank@company.com', 'Sales', 72000, '2023-01-30'],
-              [9, 'Grace Lee', 'grace@company.com', 'Engineering', 78000, '2023-02-10'],
-              [10, 'Henry Ford', 'henry@company.com', 'Operations', 65000, '2023-04-01'],
-            ],
-            totalRows: 10
+          const data = e.target?.result;
+          if (!data) {
+            throw new Error('Failed to read file data');
+          }
+
+          // Parse the Excel file
+          const workbook = XLSX.read(data, { type: 'array' });
+          
+          // Get the first sheet
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          
+          // Convert to JSON
+          const jsonData: any[][] = XLSX.utils.sheet_to_json(worksheet, { 
+            header: 1,
+            defval: '' 
+          });
+          
+          if (jsonData.length === 0) {
+            throw new Error('Excel file appears to be empty');
+          }
+          
+          // Extract headers (first row) and data rows
+          const headers = jsonData[0].map((header: any) => String(header || ''));
+          const dataRows = jsonData.slice(1).filter(row => row.some(cell => cell !== ''));
+          
+          const previewData: PreviewData = {
+            headers: headers,
+            rows: dataRows,
+            totalRows: dataRows.length
           };
           
-          setPreviewData(sampleData);
+          setPreviewData(previewData);
           setLoading(false);
-        } catch (err) {
-          setError('Failed to parse Excel file. Please ensure it\'s a valid .xlsx or .xls file.');
+        } catch (err: any) {
+          setError(err.message || 'Failed to parse Excel file. Please ensure it\'s a valid .xlsx or .xls file.');
           setLoading(false);
         }
       };
